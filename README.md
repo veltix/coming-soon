@@ -10,7 +10,7 @@ A beautiful terminal-style coming soon page built with Laravel, React, and Inert
 ## Features
 
 - **Terminal-Style Design**: Authentic macOS terminal window with traffic light buttons
-- **Live Countdown Timer**: 30-day countdown with real-time updates showing days, hours, minutes, and seconds
+- **Live Countdown Timer**: Fixed-date countdown with real-time updates showing days, hours, minutes, and seconds
 - **Beautiful Animations**:
     - Smooth fade-in and slide-in effects
     - Blinking terminal cursor
@@ -45,7 +45,7 @@ A beautiful terminal-style coming soon page built with Laravel, React, and Inert
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/veltix/coming-soon.git
+git clone <repository-url>
 cd coming-soon
 ```
 
@@ -135,14 +135,27 @@ coming-soon/
 
 ## Customization
 
-### Changing the Countdown Duration
+### Setting Your Launch Date
 
-Edit the timer calculation in `resources/js/pages/welcome.tsx`:
+Edit both the start date and target date in `resources/js/pages/welcome.tsx`:
 
 ```tsx
-// Change this line to adjust the countdown duration
-targetDate.setDate(targetDate.getDate() + 30); // Currently 30 days
+// Set your project start date (when countdown begins)
+const startDate = new Date('2024-12-03T00:00:00');
+
+// Set your desired launch date (currently set to January 2, 2026)
+const targetDate = new Date('2026-01-02T00:00:00');
 ```
+
+**How it works:**
+- The **countdown timer** shows time remaining until the target date
+- The **progress bar** calculates progress from start date to target date
+- Both update in real-time and persist across page refreshes
+- Date format: `'YYYY-MM-DDTHH:MM:SS'`
+
+**Example:** If you started your project on Dec 3, 2024 and plan to launch on Jan 2, 2026:
+- As time passes, the countdown decreases
+- The progress bar fills up proportionally (e.g., halfway through = 50%)
 
 ### Customizing Colors
 

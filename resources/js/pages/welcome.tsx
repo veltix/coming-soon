@@ -13,6 +13,7 @@ export default function Welcome({
         seconds: 0,
     });
 
+    const [progress, setProgress] = useState(0);
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -20,9 +21,12 @@ export default function Welcome({
     }, []);
 
     useEffect(() => {
-        // Set target date to 30 days from now
-        const targetDate = new Date();
-        targetDate.setDate(targetDate.getDate() + 30);
+        // Set your project start date (when countdown begins)
+        const startDate = new Date('2025-11-13T00:00:00');
+
+        // Set a fixed target date: January 2, 2026 at 00:00:00
+        // Change this date to your desired launch date
+        const targetDate = new Date('2026-01-02T00:00:00');
 
         const calculateTimeLeft = () => {
             const now = new Date().getTime();
@@ -47,10 +51,26 @@ export default function Welcome({
             };
         };
 
+        const calculateProgress = () => {
+            const now = new Date().getTime();
+            const total = targetDate.getTime() - startDate.getTime();
+            const elapsed = now - startDate.getTime();
+
+            // Calculate percentage (0-100)
+            const percentage = Math.min(
+                Math.max((elapsed / total) * 100, 0),
+                100
+            );
+
+            return percentage;
+        };
+
         setTimeLeft(calculateTimeLeft());
+        setProgress(calculateProgress());
 
         const timer = setInterval(() => {
             setTimeLeft(calculateTimeLeft());
+            setProgress(calculateProgress());
         }, 1000);
 
         return () => clearInterval(timer);
@@ -173,11 +193,17 @@ export default function Welcome({
                                                 : 'translate-y-10 opacity-0'
                                         }`}
                                     >
-                                        <div className="text-blue-400">
-                                            [PROGRESS] Building features:
+                                        <div className="flex items-center justify-between text-blue-400">
+                                            <span>[PROGRESS] Building features:</span>
+                                            <span className="text-xs">
+                                                {progress.toFixed(1)}%
+                                            </span>
                                         </div>
                                         <div className="h-4 overflow-hidden rounded-sm border border-slate-700 bg-slate-800 dark:border-slate-800 dark:bg-slate-950">
-                                            <div className="h-full animate-progress bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500" />
+                                            <div
+                                                className="h-full bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 transition-all duration-1000 ease-out"
+                                                style={{ width: `${progress}%` }}
+                                            />
                                         </div>
                                     </div>
 
