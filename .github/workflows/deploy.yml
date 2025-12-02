@@ -26,6 +26,17 @@ jobs:
           echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
 
+      - name: Debug Environment Variables
+        run: |
+          echo "DEPLOY_HOST is set: ${{ secrets.DEPLOY_HOST != '' }}"
+          echo "DEPLOY_USERNAME is set: ${{ secrets.DEPLOY_USERNAME != '' }}"
+          echo "DEPLOY_PATH is set: ${{ secrets.DEPLOY_PATH != '' }}"
+          echo "Current DEPLOY_HOST: ${DEPLOY_HOST:-'NOT SET'}"
+          echo "Current DEPLOY_USERNAME: ${DEPLOY_USERNAME:-'NOT SET'}"
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USERNAME: ${{ secrets.DEPLOY_USERNAME }}
+
       - name: Deploy to Server
         env:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
