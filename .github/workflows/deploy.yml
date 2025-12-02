@@ -17,11 +17,20 @@ jobs:
       - name: Install ZDT
         run: composer global require veltix/zdt
 
+      - name: Add Composer Global Bin to PATH
+        run: echo "$(composer global config bin-dir --absolute --quiet)" >> $GITHUB_PATH
+
+      - name: Setup SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+
       - name: Deploy to Server
         env:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
           DEPLOY_USERNAME: ${{ secrets.DEPLOY_USERNAME }}
-          DEPLOY_KEY_PATH: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_KEY_PATH: ~/.ssh/deploy_key
           DEPLOY_REPO_URL: git@github.com:${{ github.repository }}.git
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
           DEPLOY_BRANCH: ${{ github.ref_name }}
@@ -34,9 +43,4 @@ jobs:
             php artisan cache:clear
             php artisan config:cache
             php artisan route:cache
-        run: |
-          echo "$DEPLOY_KEY_PATH" > /tmp/deploy_key
-          chmod 600 /tmp/deploy_key
-          export DEPLOY_KEY_PATH=/tmp/deploy_key
-          cd $DEPLOY_PATH
-          php zdt deploy
+        run: zdt deploy
