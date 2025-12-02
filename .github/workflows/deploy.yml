@@ -15,7 +15,7 @@ jobs:
           php-version: '8.2'
 
       - name: Install ZDT
-        run: composer global require veltix/zdt
+        run: composer global require veltix/zdt:^1.1
 
       - name: Add Composer Global Bin to PATH
         run: echo "$(composer global config bin-dir --absolute --quiet)" >> $GITHUB_PATH
@@ -28,14 +28,26 @@ jobs:
 
       - name: Debug Environment Variables
         run: |
+          echo "=== Checking Secrets ==="
           echo "DEPLOY_HOST is set: ${{ secrets.DEPLOY_HOST != '' }}"
           echo "DEPLOY_USERNAME is set: ${{ secrets.DEPLOY_USERNAME != '' }}"
           echo "DEPLOY_PATH is set: ${{ secrets.DEPLOY_PATH != '' }}"
-          echo "Current DEPLOY_HOST: ${DEPLOY_HOST:-'NOT SET'}"
-          echo "Current DEPLOY_USERNAME: ${DEPLOY_USERNAME:-'NOT SET'}"
+          echo ""
+          echo "=== Environment Variables ==="
+          echo "DEPLOY_HOST: ${DEPLOY_HOST:-'NOT SET'}"
+          echo "DEPLOY_USERNAME: ${DEPLOY_USERNAME:-'NOT SET'}"
+          echo "DEPLOY_REPO_URL: ${DEPLOY_REPO_URL:-'NOT SET'}"
+          echo "DEPLOY_KEY_PATH: ${DEPLOY_KEY_PATH:-'NOT SET'}"
+          echo ""
+          echo "=== Testing getenv() in PHP ==="
+          php -r "echo 'DEPLOY_HOST via getenv: ' . (getenv('DEPLOY_HOST') ?: 'FALSE') . PHP_EOL;"
+          php -r "echo 'DEPLOY_USERNAME via getenv: ' . (getenv('DEPLOY_USERNAME') ?: 'FALSE') . PHP_EOL;"
+          php -r "echo 'DEPLOY_REPO_URL via getenv: ' . (getenv('DEPLOY_REPO_URL') ?: 'FALSE') . PHP_EOL;"
         env:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
           DEPLOY_USERNAME: ${{ secrets.DEPLOY_USERNAME }}
+          DEPLOY_REPO_URL: git@github.com:${{ github.repository }}.git
+          DEPLOY_KEY_PATH: ~/.ssh/deploy_key
 
       - name: Deploy to Server
         env:
