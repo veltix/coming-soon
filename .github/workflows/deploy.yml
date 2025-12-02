@@ -38,4 +38,5 @@ jobs:
           echo "$DEPLOY_KEY_PATH" > /tmp/deploy_key
           chmod 600 /tmp/deploy_key
           export DEPLOY_KEY_PATH=/tmp/deploy_key
+          cd $DEPLOY_PATH
           php zdt deploy
