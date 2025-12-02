@@ -66,8 +66,7 @@ jobs:
           DEPLOY_HOOKS_AFTER_CLONE: |
             composer install --no-dev --optimize-autoloader
           DEPLOY_HOOKS_BEFORE_ACTIVATE: |
-            npm ci --production
-            npm run build
+            npm i && npm run build
             php artisan config:clear
             php artisan cache:clear
             php artisan config:cache
