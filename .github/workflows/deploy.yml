@@ -15,7 +15,7 @@ jobs:
           php-version: '8.2'
 
       - name: Install ZDT
-        run: composer global require veltix/zdt:^1.1
+        run: composer global require veltix/zdt
 
       - name: Check ZDT Version
         run: |
@@ -52,7 +52,7 @@ jobs:
         env:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
           DEPLOY_USERNAME: ${{ secrets.DEPLOY_USERNAME }}
-          DEPLOY_REPO_URL: git@github.com:${{ github.repository }}.git
+          DEPLOY_REPO_URL: https://github.com/${{ github.repository }}.git
           DEPLOY_KEY_PATH: ~/.ssh/deploy_key
 
       - name: Deploy to Server
@@ -60,7 +60,7 @@ jobs:
           DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
           DEPLOY_USERNAME: ${{ secrets.DEPLOY_USERNAME }}
           DEPLOY_KEY_PATH: /home/runner/.ssh/deploy_key
-          DEPLOY_REPO_URL: git@github.com:${{ github.repository }}.git
+          DEPLOY_REPO_URL: https://github.com/${{ github.repository }}.git
           DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
           DEPLOY_BRANCH: ${{ github.ref_name }}
           DEPLOY_HOOKS_AFTER_CLONE: |
