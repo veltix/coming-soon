@@ -1,0 +1,41 @@
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+
+      - name: Install ZDT
+        run: composer global require veltix/zdt
+
+      - name: Deploy to Server
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_USERNAME: ${{ secrets.DEPLOY_USERNAME }}
+          DEPLOY_KEY_PATH: ${{ secrets.DEPLOY_SSH_KEY }}
+          DEPLOY_REPO_URL: git@github.com:${{ github.repository }}.git
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          DEPLOY_BRANCH: ${{ github.ref_name }}
+          DEPLOY_HOOKS_AFTER_CLONE: |
+            composer install --no-dev --optimize-autoloader
+          DEPLOY_HOOKS_BEFORE_ACTIVATE: |
+            npm ci --production
+            npm run build
+            php artisan config:clear
+            php artisan cache:clear
+            php artisan config:cache
+            php artisan route:cache
+        run: |
+          echo "$DEPLOY_KEY_PATH" > /tmp/deploy_key
+          chmod 600 /tmp/deploy_key
+          export DEPLOY_KEY_PATH=/tmp/deploy_key
+          php zdt deploy
