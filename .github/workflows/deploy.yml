@@ -15,7 +15,12 @@ jobs:
           php-version: '8.2'
 
       - name: Install ZDT
-        run: composer global require veltix/zdt:^1.1
+        run: composer global require veltix/zdt
+
+      - name: Check ZDT Version
+        run: |
+          zdt --version || echo "zdt command not found"
+          composer global show veltix/zdt
 
       - name: Add Composer Global Bin to PATH
         run: echo "$(composer global config bin-dir --absolute --quiet)" >> $GITHUB_PATH
