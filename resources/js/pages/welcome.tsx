@@ -1,11 +1,15 @@
 import { Head } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { Moon, Sun } from 'lucide-react';
+import { useAppearance } from '@/hooks/use-appearance';
 
 export default function Welcome({
     canRegister = true,
 }: {
     canRegister?: boolean;
 }) {
+    const { appearance, updateAppearance } = useAppearance();
+
     const [timeLeft, setTimeLeft] = useState({
         days: 0,
         hours: 0,
@@ -14,11 +18,77 @@ export default function Welcome({
     });
 
     const [progress, setProgress] = useState(0);
+    const [animatedProgress, setAnimatedProgress] = useState(0);
     const [mounted, setMounted] = useState(false);
+    const progressRef = useRef(0);
+
+    // Keep ref in sync with progress
+    useEffect(() => {
+        progressRef.current = progress;
+    }, [progress]);
 
     useEffect(() => {
         setMounted(true);
     }, []);
+
+    // Animate progress from 0 to actual value once on mount
+    useEffect(() => {
+        if (!mounted) {
+            return;
+        }
+
+        const duration = 2000; // 2 seconds
+        const delay = 1000; // 1 second delay to match entrance animation
+
+        const timeoutId = setTimeout(() => {
+            const startTime = Date.now();
+            let animationFrameId: number;
+
+            const animate = () => {
+                const now = Date.now();
+                const elapsed = now - startTime;
+                const progressRatio = Math.min(elapsed / duration, 1);
+
+                // Easing function (ease-out cubic)
+                const eased = 1 - Math.pow(1 - progressRatio, 3);
+
+                // Use progressRef to get the latest progress value
+                setAnimatedProgress(progressRef.current * eased);
+
+                if (progressRatio < 1) {
+                    animationFrameId = requestAnimationFrame(animate);
+                } else {
+                    // Animation complete, now track real progress
+                    setAnimatedProgress(progressRef.current);
+                }
+            };
+
+            animationFrameId = requestAnimationFrame(animate);
+
+            return () => {
+                clearTimeout(timeoutId);
+                if (animationFrameId) {
+                    cancelAnimationFrame(animationFrameId);
+                }
+            };
+        }, delay);
+
+        return () => clearTimeout(timeoutId);
+    }, [mounted]);
+
+    // After animation completes, keep in sync with progress
+    useEffect(() => {
+        if (!mounted) {
+            return;
+        }
+
+        // After the animation period (1s delay + 2s animation)
+        const timeoutId = setTimeout(() => {
+            setAnimatedProgress(progress);
+        }, 3100);
+
+        return () => clearTimeout(timeoutId);
+    }, [progress, mounted]);
 
     useEffect(() => {
         // Set your project start date (when countdown begins)
@@ -97,15 +167,32 @@ export default function Welcome({
                         }`}
                     >
                         {/* Terminal Header */}
-                        <div className="flex items-center gap-2 border-b border-slate-700/50 bg-slate-800 px-4 py-3 dark:border-slate-900/50 dark:bg-slate-950">
-                            <div className="flex gap-2">
-                                <div className="h-3 w-3 animate-pulse rounded-full bg-red-500 shadow-lg shadow-red-500/50" />
-                                <div className="h-3 w-3 animate-pulse rounded-full bg-yellow-500 shadow-lg shadow-yellow-500/50 animation-delay-150" />
-                                <div className="h-3 w-3 animate-pulse rounded-full bg-green-500 shadow-lg shadow-green-500/50 animation-delay-300" />
+                        <div className="flex items-center justify-between gap-2 border-b border-slate-700/50 bg-slate-800 px-4 py-3 dark:border-slate-900/50 dark:bg-slate-950">
+                            <div className="flex items-center gap-2">
+                                <div className="flex gap-2">
+                                    <div className="h-3 w-3 animate-pulse rounded-full bg-red-500 shadow-lg shadow-red-500/50" />
+                                    <div className="h-3 w-3 animate-pulse rounded-full bg-yellow-500 shadow-lg shadow-yellow-500/50 animation-delay-150" />
+                                    <div className="h-3 w-3 animate-pulse rounded-full bg-green-500 shadow-lg shadow-green-500/50 animation-delay-300" />
+                                </div>
+                                <div className="ml-4 text-sm text-slate-400 dark:text-slate-600">
+                                    veltix@terminal: ~
+                                </div>
                             </div>
-                            <div className="ml-4 text-sm text-slate-400 dark:text-slate-600">
-                                veltix@terminal: ~
-                            </div>
+
+                            {/* Appearance Switcher */}
+                            <button
+                                onClick={() => {
+                                    updateAppearance(appearance === 'dark' ? 'light' : 'dark');
+                                }}
+                                className="rounded-md p-1.5 text-slate-400 transition-colors hover:bg-slate-700/50 hover:text-slate-300 dark:hover:bg-slate-800/50 dark:hover:text-slate-400"
+                                title={`Switch to ${appearance === 'dark' ? 'light' : 'dark'} mode`}
+                            >
+                                {appearance === 'dark' ? (
+                                    <Sun className="h-4 w-4 text-yellow-500" />
+                                ) : (
+                                    <Moon className="h-4 w-4 text-blue-400" />
+                                )}
+                            </button>
                         </div>
 
                         {/* Terminal Body */}
@@ -196,13 +283,13 @@ export default function Welcome({
                                         <div className="flex items-center justify-between text-blue-400">
                                             <span>[PROGRESS] Building features:</span>
                                             <span className="text-xs">
-                                                {progress.toFixed(1)}%
+                                                {animatedProgress.toFixed(1)}%
                                             </span>
                                         </div>
                                         <div className="h-4 overflow-hidden rounded-sm border border-slate-700 bg-slate-800 dark:border-slate-800 dark:bg-slate-950">
                                             <div
-                                                className="h-full bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500 transition-all duration-1000 ease-out"
-                                                style={{ width: `${progress}%` }}
+                                                className="h-full bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500"
+                                                style={{ width: `${animatedProgress}%` }}
                                             />
                                         </div>
                                     </div>
